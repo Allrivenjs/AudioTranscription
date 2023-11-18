@@ -1,0 +1,15 @@
+github.com/dhowden/itl v0.0.0-20170329215456-9fbe21093131 h1:siEGb+iB1Ea75U7BnkYVSqSRzE6QHlXCbqEXenxRmhQ=
+github.com/dhowden/itl v0.0.0-20170329215456-9fbe21093131/go.mod h1:eVWQJVQ67aMvYhpkDwaH2Goy2vo6v8JCMfGXfQ9sPtw=
+github.com/dhowden/plist v0.0.0-20141002110153-5db6e0d9931a h1:7MucP9rMAsQRcRE1sGpvMZoTxFYZlDmfDvCH+z7H+90=
+github.com/dhowden/plist v0.0.0-20141002110153-5db6e0d9931a/go.mod h1:sLjdR6uwx3L6/Py8F+QgAfeiuY87xuYGwCDqRFrvCzw=
+github.com/hajimehoshi/oto/v2 v2.3.1 h1:qrLKpNus2UfD674oxckKjNJmesp9hMh7u7QCrStB3Rc=
+github.com/philhofer/fwd v1.1.2 h1:bnDivRJ1EWPjUIRXV5KfORO897HTbpFAQddBdE8t7Gw=
+github.com/philhofer/fwd v1.1.2/go.mod h1:qkPdfjR2SIEbspLqpe1tO4n5yICnr2DY7mqEx2tUTP0=
+github.com/tinylib/msgp v1.1.8 h1:FCXC1xanKO4I8plpHGH2P7koL/RzZs12l/+r7vakfm0=
+github.com/tinylib/msgp v1.1.8/go.mod h1:qkpG+2ldGg4xRFmx+jfTvZPxfGFhi64BcnL9vkCm/Tw=
+golang.org/x/crypto v0.7.0 h1:AvwMYaRytfdeVt3u6mLaxYtErKYjxA2OXjJ1HHq6t3A=
+golang.org/x/crypto v0.7.0/go.mod h1:pYwdfH91IfpZVANVyUOhSIPZaFoJGxTFbZhFTx+dXZU=
+golang.org/x/net v0.8.0 h1:Zrh2ngAOFYneWTAIAPethzeaQLuHwhuBkuV6ZiRnUaQ=
+golang.org/x/net v0.8.0/go.mod h1:QVkue5JL9kW//ek3r6jTKnTFis1tRmNAW2P1shuFdJc=
+golang.org/x/text v0.8.0 h1:57P1ETyNKtuIjB4SRd15iJxuhj8Gc416Y78H3qgMh68=
+golang.org/x/text v0.8.0/go.mod h1:e1OnstbJyHTd6l/uOt8jFFHp6TRDWZR/bV3emEE/zU8=
