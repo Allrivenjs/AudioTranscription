@@ -3,21 +3,16 @@ module AudioTranscription
 go 1.21
 
 require (
-	github.com/gofiber/fiber/v2 v2.49.2
-	github.com/hajimehoshi/go-mp3 v0.3.4
+	github.com/appleboy/go-whisper v1.3.0
+	github.com/ggerganov/whisper.cpp/bindings/go v0.0.0-20240224072447-f18738f247d1
+	github.com/go-audio/wav v1.1.0
+	github.com/rs/zerolog v1.32.0
 )
 
 require (
-	github.com/andybalholm/brotli v1.0.5 // indirect
-	github.com/dhowden/tag v0.0.0-20230630033851-978a0926ee25 // indirect
-	github.com/google/uuid v1.3.1 // indirect
-	github.com/klauspost/compress v1.16.7 // indirect
+	github.com/go-audio/audio v1.0.0 // indirect
+	github.com/go-audio/riff v1.0.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.19 // indirect
-	github.com/mattn/go-runewidth v0.0.15 // indirect
-	github.com/rivo/uniseg v0.2.0 // indirect
-	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.49.0 // indirect
-	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	golang.org/x/sys v0.16.0 // indirect
 )
