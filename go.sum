@@ -5,6 +5,8 @@ github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/ggerganov/whisper.cpp/bindings/go v0.0.0-20240224072447-f18738f247d1 h1:tmLrS2Ac7ebIBUR0+vxhrgX+P6Xwo1R18uPzUL3aWf8=
 github.com/ggerganov/whisper.cpp/bindings/go v0.0.0-20240224072447-f18738f247d1/go.mod h1:QIjZ9OktHFG7p+/m3sMvrAJKKdWrr1fZIK0rM6HZlyo=
+github.com/ggerganov/whisper.cpp/bindings/go v0.0.0-20240225180010-3170841ed9f3 h1:V2xdZACfP0c7S5nfjSYXUJu4o0keoTLjpn6iQzPJNQI=
+github.com/ggerganov/whisper.cpp/bindings/go v0.0.0-20240225180010-3170841ed9f3/go.mod h1:QIjZ9OktHFG7p+/m3sMvrAJKKdWrr1fZIK0rM6HZlyo=
 github.com/go-audio/audio v1.0.0 h1:zS9vebldgbQqktK4H0lUqWrG8P0NxCJVqcj7ZpNnwd4=
 github.com/go-audio/audio v1.0.0/go.mod h1:6uAu0+H2lHkwdGsAY+j2wHPNPpPoeg5AaEFh9FlA+Zs=
 github.com/go-audio/riff v1.0.0 h1:d8iCGbDvox9BfLagY94fBynxSPHO80LmZCaOsmKxokA=

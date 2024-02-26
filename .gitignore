@@ -26,3 +26,4 @@ files/*
 on_process_files/*
 pretrained_models
 Transform/pretrained_models
+models/*
