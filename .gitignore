@@ -22,8 +22,5 @@ go.work
 
 .idea
 temp
-files/*
-on_process_files/*
-pretrained_models
-Transform/pretrained_models
 models/*
+samples/*.txt
