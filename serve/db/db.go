@@ -1,28 +1,37 @@
 package db
 
 import (
+	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"os"
 	"strconv"
-
-	"gopkg.in/mgo.v2"
+	"time"
 )
 
 type Connection interface {
 	Close()
-	DB() *mgo.Database
+	DB() *mongo.Database
 }
 
 type conn struct {
-	session *mgo.Session
+	client *mongo.Client
 }
 
 func NewConnection() Connection {
 	var c conn
 	var err error
 	url := getURL()
-	c.session, err = mgo.Dial(url)
+	clientOptions := options.Client().ApplyURI(url)
+	c.client, err = mongo.NewClient(clientOptions)
+	if err != nil {
+		log.Panicln(err.Error())
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	err = c.client.Connect(ctx)
 	if err != nil {
 		log.Panicln(err.Error())
 	}
@@ -30,17 +39,21 @@ func NewConnection() Connection {
 }
 
 func (c *conn) Close() {
-	c.session.Close()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := c.client.Disconnect(ctx); err != nil {
+		log.Println("Error al desconectar:", err)
+	}
 }
 
-func (c *conn) DB() *mgo.Database {
-	return c.session.DB(os.Getenv("DATABASE_NAME"))
+func (c *conn) DB() *mongo.Database {
+	return c.client.Database(os.Getenv("DATABASE_NAME"))
 }
 
 func getURL() string {
 	port, err := strconv.Atoi(os.Getenv("DATABASE_PORT"))
 	if err != nil {
-		log.Println("error on load db port from env:", err.Error())
+		log.Println("Error al cargar el puerto de la base de datos desde la variable de entorno:", err)
 		port = 27017
 	}
 	return fmt.Sprintf("mongodb://%s:%s@%s:%d/%s",
