@@ -1,8 +1,12 @@
 package main
 
 import (
+	"AudioTranscription/serve/controllers"
 	"AudioTranscription/serve/db"
 	"AudioTranscription/serve/models"
+	"AudioTranscription/serve/repository"
+	"AudioTranscription/serve/routes"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -17,24 +21,24 @@ func init() {
 		log.Panicln(err)
 	}
 }
-func async(app *fiber.App) {
+func async(app *fiber.App) db.Connection {
 	conn := db.NewConnection()
-	defer conn.Close()
 	models.AutoMigrate(conn)
-	//usersRepo := repository.NewUsersRepository(conn)
-	//authController := controllers.NewAuthController(usersRepo)
-	//authRoutes := routes.NewAuthRoutes(authController)
-	//authRoutes.Install(app)
+	usersRepo := repository.NewUsersRepository(conn)
+	authController := controllers.NewAuthController(usersRepo)
+	authRoutes := routes.NewAuthRoutes(authController)
+	authRoutes.Install(app)
 
-	//// Obtener todas las rutas
-	//routes := app.GetRoutes()
-	//// get all users
-	//app.Get("/userss", authController.GetUsers)
-	// Imprimir todas las rutas
-	//fmt.Println("Rutas registradas:")
-	//for _, route := range routes {
-	//	fmt.Printf("-> %s %s\n", route.Method, route.Path)
-	//}
+	// Obtener todas las rutas
+	getRoutes := app.GetRoutes()
+	// get all users
+	app.Get("/userss", authController.GetUsers)
+	//Imprimir todas las rutas
+	fmt.Println("Rutas registradas:")
+	for _, route := range getRoutes {
+		fmt.Printf("-> %s %s\n", route.Method, route.Path)
+	}
+	return conn
 }
 
 func main() {
@@ -46,7 +50,7 @@ func main() {
 		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Hello World"})
 	})
 
-	async(app)
-
+	conn := async(app)
+	defer conn.Close()
 	log.Fatal(app.Listen(":8080"))
 }

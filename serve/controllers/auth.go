@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -69,8 +70,7 @@ func (c *authController) SignUp(ctx *fiber.Ctx) error {
 		}
 		newUser.CreatedAt = time.Now()
 		newUser.UpdatedAt = newUser.CreatedAt
-		newUser.Id = bson.NewObjectId()
-		err = c.usersRepo.Save(&newUser)
+		err = c.usersRepo.SaveOrUpdate(&newUser)
 		if err != nil {
 			return ctx.
 				Status(http.StatusBadRequest).
@@ -113,7 +113,7 @@ func (c *authController) SignIn(ctx *fiber.Ctx) error {
 			Status(http.StatusUnauthorized).
 			JSON(util.NewJError(util.ErrInvalidCredentials))
 	}
-	token, err := security.NewToken(user.Id.Hex())
+	token, err := security.NewToken(strconv.Itoa(int(user.ID)))
 	if err != nil {
 		log.Printf("%s signin failed: %v\n", input.Email, err.Error())
 		return ctx.
@@ -179,7 +179,7 @@ func (c *authController) PutUser(ctx *fiber.Ctx) error {
 			JSON(util.NewJError(util.ErrInvalidEmail))
 	}
 	exists, err := c.usersRepo.GetByEmail(update.Email)
-	if err == mgo.ErrNotFound || exists.Id.Hex() == payload.Id {
+	if errors.Is(err, mgo.ErrNotFound) || strconv.Itoa(int(exists.ID)) == payload.Id {
 		user, err := c.usersRepo.GetById(payload.Id)
 		if err != nil {
 			return ctx.
@@ -188,7 +188,7 @@ func (c *authController) PutUser(ctx *fiber.Ctx) error {
 		}
 		user.Email = update.Email
 		user.UpdatedAt = time.Now()
-		err = c.usersRepo.Update(user)
+		err = c.usersRepo.SaveOrUpdate(user)
 		if err != nil {
 			return ctx.
 				Status(http.StatusUnprocessableEntity).

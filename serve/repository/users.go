@@ -1,15 +1,14 @@
 package repository
 
 import (
+	"AudioTranscription/serve/db"
 	"AudioTranscription/serve/models"
-	"go.mongodb.org/mongo-driver/mongo"
+	"fmt"
+	"gorm.io/gorm"
 )
 
-const UsersCollection = "users"
-
 type UsersRepository interface {
-	Save(user *models.User) error
-	Update(user *models.User) error
+	SaveOrUpdate(user *models.User) error
 	GetById(id string) (*models.User, error)
 	GetByEmail(email string) (*models.User, error)
 	GetAll() ([]*models.User, error)
@@ -17,71 +16,48 @@ type UsersRepository interface {
 }
 
 type usersRepository struct {
-	collection *mongo.Collection
+	db *gorm.DB
 }
 
-//func NewUsersRepository(conn db.Connection) UsersRepository {
-//	return &usersRepository{collection: conn.DB().Collection(UsersCollection)}
-//}
-//
-//func (r *usersRepository) Save(user *models.User) error {
-//	_, err := r.collection.InsertOne(context.Background(), user)
-//	return err
-//}
-//
-//func (r *usersRepository) Update(user *models.User) error {
-//	filter := bson.M{"_id": user.Id}
-//	update := bson.M{"$set": user}
-//	_, err := r.collection.UpdateOne(context.Background(), filter, update)
-//	return err
-//}
-//
-//func (r *usersRepository) GetById(id string) (*models.User, error) {
-//	var user models.User
-//	filter := bson.M{"_id": id}
-//	err := r.collection.FindOne(context.Background(), filter).Decode(&user)
-//	if err != nil {
-//		return nil, err
-//	}
-//	return &user, nil
-//}
-//
-//func (r *usersRepository) GetByEmail(email string) (*models.User, error) {
-//	var user models.User
-//	filter := bson.M{"email": email}
-//	err := r.collection.FindOne(context.Background(), filter).Decode(&user)
-//	if err != nil {
-//		return nil, err
-//	}
-//	return &user, nil
-//}
-//
-//func (r *usersRepository) GetAll() ([]*models.User, error) {
-//	var users []*models.User
-//	cur, err := r.collection.Find(context.Background(), bson.M{})
-//	if err != nil {
-//		return nil, err
-//	}
-//	defer cur.Close(context.Background())
-//
-//	for cur.Next(context.Background()) {
-//		var user models.User
-//		err := cur.Decode(&user)
-//		if err != nil {
-//			return nil, err
-//		}
-//		users = append(users, &user)
-//	}
-//
-//	if err := cur.Err(); err != nil {
-//		return nil, err
-//	}
-//
-//	return users, nil
-//}
-//
-//func (r *usersRepository) Delete(id string) error {
-//	filter := bson.M{"_id": id}
-//	_, err := r.collection.DeleteOne(context.Background(), filter)
-//	return err
-//}
+func NewUsersRepository(conn db.Connection) UsersRepository {
+	return &usersRepository{db: conn.DB()}
+}
+
+func (r *usersRepository) SaveOrUpdate(user *models.User) error {
+	if err := r.db.Save(user).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *usersRepository) GetById(id string) (*models.User, error) {
+	var user models.User
+	if err := r.db.Find(&user, id).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *usersRepository) GetByEmail(email string) (*models.User, error) {
+	var user models.User
+	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (r *usersRepository) GetAll() ([]*models.User, error) {
+	var users []*models.User
+	if err := r.db.Find(&users).Error; err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return users, nil
+}
+
+func (r *usersRepository) Delete(id string) error {
+	if err := r.db.Delete(&models.User{}, id).Error; err != nil {
+		return err
+	}
+	return nil
+}
