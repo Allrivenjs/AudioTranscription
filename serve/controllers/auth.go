@@ -5,6 +5,7 @@ import (
 	"AudioTranscription/serve/repository"
 	"AudioTranscription/serve/security"
 	"AudioTranscription/serve/util"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -44,19 +45,23 @@ func (c *authController) SignUp(ctx *fiber.Ctx) error {
 			JSON(util.NewJError(err))
 	}
 	newUser.Email = util.NormalizeEmail(newUser.Email)
+
 	if !govalidator.IsEmail(newUser.Email) {
 		return ctx.
 			Status(http.StatusBadRequest).
 			JSON(util.NewJError(util.ErrInvalidEmail))
 	}
+
 	exists, err := c.usersRepo.GetByEmail(newUser.Email)
-	if err == mgo.ErrNotFound {
+	fmt.Println(fmt.Sprintf("exists: %v and error is %v", exists, err))
+	if errors.Is(err, mgo.ErrNotFound) {
 		if strings.TrimSpace(newUser.Password) == "" {
 			return ctx.
 				Status(http.StatusBadRequest).
 				JSON(util.NewJError(util.ErrEmptyPassword))
 		}
 		newUser.Password, err = security.EncryptPassword(newUser.Password)
+
 		if err != nil {
 			return ctx.
 				Status(http.StatusBadRequest).
@@ -75,7 +80,7 @@ func (c *authController) SignUp(ctx *fiber.Ctx) error {
 			Status(http.StatusCreated).
 			JSON(newUser)
 	}
-
+	fmt.Println("user")
 	if exists != nil {
 		err = util.ErrEmailAlreadyExists
 	}

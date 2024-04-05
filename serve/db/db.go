@@ -1,65 +1,76 @@
 package db
 
 import (
-	"context"
 	"fmt"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 	"log"
 	"os"
-	"strconv"
-	"time"
 )
 
 type Connection interface {
 	Close()
-	DB() *mongo.Database
+	DB() *gorm.DB
+	RegisterModels(...interface{})
+	Migrate()
 }
 
 type conn struct {
-	client *mongo.Client
+	db *gorm.DB
 }
 
+var modelsRegistered []interface{}
+
 func NewConnection() Connection {
+	log.Println("creating connection")
 	var c conn
-	var err error
-	url := getURL()
-	clientOptions := options.Client().ApplyURI(url)
-	c.client, err = mongo.NewClient(clientOptions)
+	db, err := gorm.Open(mysql.Open(getDNS()), &gorm.Config{})
 	if err != nil {
-		log.Panicln(err.Error())
+		log.Fatal(err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	err = c.client.Connect(ctx)
-	if err != nil {
-		log.Panicln(err.Error())
-	}
+	c.db = db
 	return &c
 }
 
-func (c *conn) Close() {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	if err := c.client.Disconnect(ctx); err != nil {
-		log.Println("Error al desconectar:", err)
+func (c *conn) RegisterModels(models ...interface{}) {
+	log.Printf("Registering %d model", len(models))
+	// print log name for each model
+	for _, model := range models {
+		log.Printf("Registering model %T", model)
 	}
+	modelsRegistered = append(modelsRegistered, models...)
 }
 
-func (c *conn) DB() *mongo.Database {
-	return c.client.Database(os.Getenv("DATABASE_NAME"))
-}
-
-func getURL() string {
-	port, err := strconv.Atoi(os.Getenv("DATABASE_PORT"))
+func (c *conn) Migrate() {
+	log.Println("Migrating models")
+	err := c.db.AutoMigrate(modelsRegistered...)
 	if err != nil {
-		log.Println("Error al cargar el puerto de la base de datos desde la variable de entorno:", err)
-		port = 27017
+		log.Fatal(err)
 	}
-	return fmt.Sprintf("mongodb://%s:%s@%s:%d/%s",
-		os.Getenv("DATABASE_USER"),
-		os.Getenv("DATABASE_PASS"),
-		os.Getenv("DATABASE_HOST"),
-		port,
-		os.Getenv("DATABASE_NAME"))
+}
+
+func (c *conn) Close() {
+	log.Println("Closing connection")
+	db, err := c.db.DB()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = db.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (c *conn) DB() *gorm.DB {
+	return c.db
+}
+
+func getDNS() string {
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		os.Getenv("MYSQLUSER"),
+		os.Getenv("MYSQLPASSWORD"),
+		os.Getenv("MYSQLHOST"),
+		os.Getenv("MYSQLPORT"),
+		os.Getenv("MYSQLDATABASE"),
+	)
 }

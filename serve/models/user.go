@@ -1,15 +1,13 @@
 package models
 
 import (
-	"time"
-
-	"gopkg.in/mgo.v2/bson"
+	"gorm.io/gorm"
 )
 
 type User struct {
-	Id        bson.ObjectId `json:"id" bson:"_id"`
-	Email     string        `json:"email" bson:"email"`
-	Password  string        `json:"password" bson:"password"`
-	CreatedAt time.Time     `json:"created_at" bson:"created_at"`
-	UpdatedAt time.Time     `json:"updated_at" bson:"updated_at"`
+	gorm.Model
+	FirstName string `gorm:"size:100;not null" json:"first_name"`
+	LastName  string `gorm:"size:100;not null" json:"last_name"`
+	Email     string `gorm:"size:100;unique;not null" json:"email"`
+	Password  string `gorm:"size:255;not null" json:"-"`
 }
