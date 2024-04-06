@@ -12,3 +12,12 @@ Donde:
 - -model representa el modelo a usar, 
 - -out-file representa el archivo donde se escribira los datos. ese se creara automaticamente.
 - `samples\jfk.wav` es la ruta donde se encuentra el audio a decodificar. 
+
+
+
+### links 
+
+https://github.com/ggerganov/whisper.cpp/tree/master/bindings/go
+https://github.com/djthorpe/go-whisper
+
+https://wavesurfer.xyz/
