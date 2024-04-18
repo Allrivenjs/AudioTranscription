@@ -9,5 +9,5 @@ type User struct {
 	FirstName string `gorm:"size:100;not null" json:"first_name"`
 	LastName  string `gorm:"size:100;not null" json:"last_name"`
 	Email     string `gorm:"size:100;unique;not null" json:"email"`
-	Password  string `gorm:"size:255;not null" json:"-"`
+	Password  string `gorm:"not null" json:"-"`
 }

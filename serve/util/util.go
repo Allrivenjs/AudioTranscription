@@ -1,17 +1,17 @@
 package util
 
-import "strings"
+import (
+	"github.com/gofiber/fiber/v2"
+	"strings"
+)
 
-type JError struct {
-	Error string `json:"error"`
-}
-
-func NewJError(err error) JError {
-	jerr := JError{"generic error"}
+func NewJError(err error) *fiber.Map {
 	if err != nil {
-		jerr.Error = err.Error()
+		return &fiber.Map{
+			"error": err.Error(),
+		}
 	}
-	return jerr
+	return nil
 }
 
 func NormalizeEmail(email string) string {

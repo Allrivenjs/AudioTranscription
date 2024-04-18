@@ -29,6 +29,11 @@ type AuthController interface {
 	DeleteUser(ctx *fiber.Ctx) error
 }
 
+type SignIn struct {
+	Email    string `valid:"required,stringlength(3|100)" json:"email"`
+	Password string `valid:"required" json:"password"`
+}
+
 type authController struct {
 	usersRepo repository.UsersRepository
 }
@@ -90,13 +95,30 @@ func (c *authController) SignUp(ctx *fiber.Ctx) error {
 		JSON(util.NewJError(err))
 }
 
+// SignIn godoc
+// @Summary Sign in to the application
+// @Description sign in to the application
+// @Tags auth
+// @Accept  json
+// @Produce  json
+// @Body {object} SignUp
+// @Success 200 {object} models.User
+// @Router /auth/signup [post]
 func (c *authController) SignIn(ctx *fiber.Ctx) error {
-	var input models.User
+	var input SignIn
+
 	err := ctx.BodyParser(&input)
+
 	if err != nil {
+		fmt.Println(err, "input")
 		return ctx.
 			Status(http.StatusUnprocessableEntity).
-			JSON(util.NewJError(err))
+			JSON(util.ErrorResponse(util.NewJError(err)))
+	}
+	validateErrors := util.ValidateInput(ctx, input)
+	if validateErrors != nil {
+		ctx.Status(http.StatusBadRequest)
+		return ctx.JSON(util.ErrorResponse(validateErrors))
 	}
 	input.Email = util.NormalizeEmail(input.Email)
 	user, err := c.usersRepo.GetByEmail(input.Email)
@@ -104,28 +126,32 @@ func (c *authController) SignIn(ctx *fiber.Ctx) error {
 		log.Printf("%s signin failed: %v\n", input.Email, err.Error())
 		return ctx.
 			Status(http.StatusUnauthorized).
-			JSON(util.NewJError(util.ErrInvalidCredentials))
+			JSON(util.ErrorResponse(util.NewJError(err)))
 	}
 	err = security.VerifyPassword(user.Password, input.Password)
+
 	if err != nil {
 		log.Printf("%s signin failed: %v\n", input.Email, err.Error())
 		return ctx.
 			Status(http.StatusUnauthorized).
-			JSON(util.NewJError(util.ErrInvalidCredentials))
+			JSON(util.ErrorResponse(util.NewJError(util.ErrInvalidCredentials)))
 	}
+
 	token, err := security.NewToken(strconv.Itoa(int(user.ID)))
+
 	if err != nil {
 		log.Printf("%s signin failed: %v\n", input.Email, err.Error())
 		return ctx.
 			Status(http.StatusUnauthorized).
-			JSON(util.NewJError(err))
+			JSON(util.ErrorResponse(util.NewJError(err)))
 	}
+
 	return ctx.
 		Status(http.StatusOK).
-		JSON(fiber.Map{
+		JSON(util.SuccessResponse(&fiber.Map{
 			"user":  user,
 			"token": fmt.Sprintf("Bearer %s", token),
-		})
+		}))
 }
 
 func (c *authController) GetUser(ctx *fiber.Ctx) error {
