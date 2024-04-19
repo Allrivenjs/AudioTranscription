@@ -14,10 +14,22 @@ func NewAuthRoutes(authController controllers.AuthController) Routes {
 }
 
 func (r *authRoutes) Install(app *fiber.App) {
-	app.Post("/auth/signup", r.authController.SignUp)
-	app.Post("/auth/signin", r.authController.SignIn)
-	app.Get("/users", AuthRequired, r.authController.GetUsers)
-	app.Get("/users/:id", AuthRequired, r.authController.GetUser)
-	app.Put("/users/:id", AuthRequired, r.authController.PutUser)
-	app.Delete("/users/:id", AuthRequired, r.authController.DeleteUser)
+
+	auth(app, r)
+	users(app, r)
+}
+
+func auth(app *fiber.App, r *authRoutes) {
+	a := app.Group("/auth")
+	a.Post("/signup", r.authController.SignUp)
+	a.Post("/signin", r.authController.SignIn)
+
+}
+
+func users(app *fiber.App, r *authRoutes) {
+	u := app.Group("/users", AuthRequired)
+	u.Get("/", r.authController.GetUsers)
+	u.Get("/:id", r.authController.GetUser)
+	u.Put("/:id", r.authController.PutUser)
+	u.Delete("/:id", r.authController.DeleteUser)
 }
