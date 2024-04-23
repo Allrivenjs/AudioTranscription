@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	ffmpeg_go "github.com/u2takey/ffmpeg-go"
 	"os"
 	"os/exec"
 )
@@ -20,19 +21,18 @@ func Sh(c string) (string, error) {
 
 // AudioToWav converts audio to wav for transcribe.
 func AudioToWav(src, dst string) error {
-	out, err := sh(fmt.Sprintf("ffmpeg -i %s -format s16le -ar 16000 -ac 1 -acodec pcm_s16le %s", src, dst))
+	err := ffmpeg_go.Input(src).Output(dst).OverWriteOutput().ErrorToStdOut().Run()
 	if err != nil {
-		return fmt.Errorf("error: %w out: %s", err, out)
+		return fmt.Errorf("error: %w", err)
 	}
-
 	return nil
 }
 
 // CutSilences cuts silences from audio.
-func CutSilences(src, dst string) error {
-	out, err := sh(fmt.Sprintf("vmh cut-silences %s %s", src, dst))
+func CutSilences(src, dst string, startTime, endTime int16) error {
+	err := ffmpeg_go.Input(src, ffmpeg_go.KwArgs{"ss": startTime}).Output(dst, ffmpeg_go.KwArgs{"t": startTime}).OverWriteOutput().ErrorToStdOut().Run()
 	if err != nil {
-		return fmt.Errorf("error: %w out: %s", err, out)
+		return fmt.Errorf("error: %w out: %s", err, dst)
 	}
 	return nil
 }

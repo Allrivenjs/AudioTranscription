@@ -40,7 +40,13 @@ func (a *appRepository) async() db.Connection {
 	usersRepo := repository.NewUsersRepository(conn)
 	authController := controllers.NewAuthController(usersRepo)
 	authRoutes := routes.NewAuthRoutes(authController)
+
+	transRepo := repository.NewTranscriptionRepository(conn)
+	transController := controllers.NewTranscriptionController(transRepo)
+	transRoutes := routes.NewTransRoutes(transController)
+
 	authRoutes.Install(app)
+	transRoutes.Install(app)
 	a.registerDocSwagger()
 
 	// Obtener todas las rutas
@@ -71,8 +77,10 @@ func (a *appRepository) registerDocSwagger() {
 }
 
 func main() {
-
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		BodyLimit:         1024 * 1024 * 1024,
+		StreamRequestBody: true,
+	})
 	app.Use(cors.New())
 	app.Use(logger.New())
 	app.Get("/", func(ctx *fiber.Ctx) error {

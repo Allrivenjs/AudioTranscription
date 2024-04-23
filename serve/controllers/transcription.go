@@ -5,9 +5,12 @@ import (
 	"AudioTranscription/serve/repository"
 	"AudioTranscription/serve/storage"
 	"AudioTranscription/serve/util"
+	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
+	"strings"
+	"time"
 )
 
 type TranscriptionController interface {
@@ -60,8 +63,6 @@ func (t transcriptionController) ListTranscription(ctx *fiber.Ctx) error {
 
 type CreateTranscriptionRequest struct {
 	// In: body
-	Audio string `valid:"required" json:"audio"`
-	// In: body
 	Title string `valid:"required" json:"name"`
 }
 
@@ -71,20 +72,40 @@ func (t transcriptionController) CreateTranscription(ctx *fiber.Ctx) error {
 	if err != nil {
 		return ctx.Status(http.StatusUnprocessableEntity).JSON(util.NewJError(err))
 	}
+	file, err := ctx.FormFile("audio")
+	if err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(util.ErrorResponse(&fiber.Map{
+			"audio": "audio file is required",
+		}))
+	}
 	validateErrors := util.ValidateInput(ctx, newTranscription)
 	if validateErrors != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(util.ErrorResponse(validateErrors))
 	}
-	var transcriptrion = models.Transcription{
+
+	if strings.Contains(file.Filename, ".mp3") {
+		return ctx.Status(http.StatusBadRequest).JSON(util.NewJError(errors.New("audio file must be in wav format")))
+	}
+	stg := storage.NewStorage(ctx)
+	timestamp := time.Now().Format("2006-01-02_15-04-05")
+	timenow := time.Now().Nanosecond()
+	path, err := stg.CreateAudioFile(fmt.Sprintf("%s_%d_%s.%s", timestamp, timenow, newTranscription.Title, "wav"), file)
+	if err != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(util.NewJError(err))
+	}
+	trans := models.Transcription{
 		Title:             newTranscription.Title,
+		AudioUrl:          path,
 		Transcription:     "",
 		SortTranscription: "",
 	}
-	audio := util.AudioToWav()
-	file, err := storage.NewStorage().CreateAudioFile(fmt.Sprintf("%s.%s", newTranscription.Title, "wav"), []byte(newTranscription.Audio))
+	err = t.transcriptionRepo.SaveOrUpdate(&trans)
 	if err != nil {
-		return err
+		return ctx.Status(http.StatusBadRequest).JSON(util.NewJError(err))
 	}
+	return ctx.Status(http.StatusCreated).JSON(util.SuccessResponse(&fiber.Map{
+		"transcription": trans,
+	}))
 }
 
 func (t transcriptionController) GetTranscription(ctx *fiber.Ctx) error {

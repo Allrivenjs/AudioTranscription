@@ -2,20 +2,26 @@ package storage
 
 import (
 	"fmt"
+	"github.com/gofiber/fiber/v2"
+	"mime/multipart"
 	"os"
 )
 
 type Storage interface {
 	CreateFolder(path string) error
-	CreateFile(path string, body []byte) (string, error)
-	CreateAudioFile(path string, body []byte) (string, error)
+	CreateFile(path string, file *multipart.FileHeader) (string, error)
+	CreateAudioFile(path string, file *multipart.FileHeader) (string, error)
 	GetFile(path string) ([]byte, error)
 }
 
-const baseRoute = "../storage/app/"
+var baseRoute = fmt.Sprintf("%s/%s", (func() string {
+	dir, _ := os.Getwd()
+	return dir
+})(), "/storage/app/")
 
 type storage struct {
 	baseRoute string
+	ctx       *fiber.Ctx
 }
 
 func (s storage) CreateFolder(path string) error {
@@ -28,25 +34,30 @@ func (s storage) CreateFolder(path string) error {
 	return nil
 }
 
-func (s storage) CreateFile(path string, body []byte) (string, error) {
+func (s storage) CreateFile(path string, file *multipart.FileHeader) (string, error) {
+	fmt.Println("Current working directory")
+	fmt.Println(os.Getwd())
 	newPath := fmt.Sprintf("%s%s", s.baseRoute, path)
-	err := os.WriteFile(newPath, body, 0644)
+	err := s.ctx.SaveFile(file, newPath)
+	if err != nil {
+		return "", err
+
+	}
+	return newPath, nil
+}
+
+func (s storage) CreateAudioFile(path string, file *multipart.FileHeader) (string, error) {
+
+	err := s.CreateFolder("audio")
+	newPath, err := s.CreateFile(fmt.Sprintf("%s/%s", "audio", path), file)
 	if err != nil {
 		return "", err
 	}
 	return newPath, nil
 }
 
-func (s storage) CreateAudioFile(path string, body []byte) (string, error) {
-	file, err := s.CreateFile(fmt.Sprintf("%s/%s", "audio", path), body)
-	if err != nil {
-		return "", err
-	}
-	return file, nil
-}
-
 func (s storage) GetFile(path string) ([]byte, error) {
-	newPath := fmt.Sprintf("%s%s", s.baseRoute, path)
+	newPath := fmt.Sprintf("%s", path)
 	file, err := os.ReadFile(newPath)
 	if err != nil {
 		return nil, err
@@ -54,6 +65,6 @@ func (s storage) GetFile(path string) ([]byte, error) {
 	return file, nil
 }
 
-func NewStorage() Storage {
-	return &storage{baseRoute: baseRoute}
+func NewStorage(ctx *fiber.Ctx) Storage {
+	return &storage{baseRoute: baseRoute, ctx: ctx}
 }
