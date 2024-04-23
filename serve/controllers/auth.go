@@ -7,30 +7,56 @@ import (
 	"AudioTranscription/serve/util"
 	"errors"
 	"fmt"
-	"log"
-	"net/http"
-	"strconv"
-	"strings"
-	"time"
-
 	"github.com/form3tech-oss/jwt-go"
 	"github.com/gofiber/fiber/v2"
 	"gopkg.in/asaskevich/govalidator.v9"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"log"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type AuthController interface {
+	// swagger:route POST /auth/signup Auth SignUp
+	// Sign up to the application
+	// responses:
+	// 	201: userResponse
 	SignUp(ctx *fiber.Ctx) error
+	// swagger:route POST /auth/signin Auth SignIn
+	// Sign in to the application
+	// responses:
+	// 	200: userResponse
 	SignIn(ctx *fiber.Ctx) error
+	// swagger:route GET /auth/{id} Auth GetUser
+	// Get a user by id
+	// responses:
+	// 	200: userResponse
 	GetUser(ctx *fiber.Ctx) error
+	// swagger:route GET /auth Auth GetUsers
+	// Get all users
+	// responses:
+	// 	200: userResponse
 	GetUsers(ctx *fiber.Ctx) error
+	// swagger:route PUT /auth/{id} Auth PutUser
+	// Update a user by id
+	// responses:
+	// 	200: userResponse
 	PutUser(ctx *fiber.Ctx) error
+	// swagger:route DELETE /auth/{id} Auth DeleteUser
+	// Delete a user by id
+	// responses:
+	// 	204: noContentResponse
 	DeleteUser(ctx *fiber.Ctx) error
 }
 
+// swagger:body listOneService
 type SignIn struct {
-	Email    string `valid:"required,stringlength(3|100)" json:"email"`
+	// In: body
+	Email string `valid:"required,stringlength(3|100)" json:"email"`
+	// In: body
 	Password string `valid:"required" json:"password"`
 }
 
@@ -101,8 +127,8 @@ func (c *authController) SignUp(ctx *fiber.Ctx) error {
 // @Tags auth
 // @Accept  json
 // @Produce  json
-// @Body {object} SignUp
-// @Success 200 {object} models.User
+// @body SignIn true "User object that needs to be added"
+// @Success 200 {array} models.User
 // @Router /auth/signup [post]
 func (c *authController) SignIn(ctx *fiber.Ctx) error {
 	var input SignIn

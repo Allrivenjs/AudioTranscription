@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "AudioTranscription/docs"
 	"AudioTranscription/serve/controllers"
 	"AudioTranscription/serve/db"
 	"AudioTranscription/serve/models"
@@ -10,6 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/swagger"
 	"github.com/joho/godotenv"
 	"log"
 	"net/http"
@@ -21,24 +23,51 @@ func init() {
 		log.Panicln(err)
 	}
 }
-func async(app *fiber.App) db.Connection {
+
+type app interface {
+	async(app *fiber.App) db.Connection
+	registerDocSwagger(app *fiber.App)
+}
+
+type appRepository struct {
+	app *fiber.App
+}
+
+func (a *appRepository) async() db.Connection {
+	app := a.app
 	conn := db.NewConnection()
 	models.AutoMigrate(conn)
 	usersRepo := repository.NewUsersRepository(conn)
 	authController := controllers.NewAuthController(usersRepo)
 	authRoutes := routes.NewAuthRoutes(authController)
 	authRoutes.Install(app)
+	a.registerDocSwagger()
 
 	// Obtener todas las rutas
 	getRoutes := app.GetRoutes()
-	// get all users
-	app.Get("/userss", authController.GetUsers)
+
 	//Imprimir todas las rutas
 	fmt.Println("Rutas registradas:")
 	for _, route := range getRoutes {
 		fmt.Printf("-> %s %s\n", route.Method, route.Path)
 	}
 	return conn
+}
+
+func (a *appRepository) registerDocSwagger() {
+	app := a.app
+	app.Get("/docs/*", swagger.HandlerDefault)
+
+	app.Get("/docs/*", swagger.New(swagger.Config{
+		URL:          "http://example.com/swagger.json",
+		DeepLinking:  false,
+		DocExpansion: "none",
+		OAuth: &swagger.OAuthConfig{
+			AppName:  "OAuth Provider",
+			ClientId: "21bb4edc-05a7-4afc-86f1-2e151e4ba6e2",
+		},
+		OAuth2RedirectUrl: "http://localhost:3001/swagger/oauth2-redirect.html",
+	}))
 }
 
 func main() {
@@ -49,8 +78,9 @@ func main() {
 	app.Get("/", func(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Hello World"})
 	})
-
-	conn := async(app)
+	r := &appRepository{app: app}
+	conn := r.async()
 	defer conn.Close()
 	log.Fatal(app.Listen(":8080"))
+
 }

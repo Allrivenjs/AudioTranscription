@@ -4,6 +4,8 @@ import "AudioTranscription/serve/db"
 
 func AutoMigrate(conn db.Connection) {
 	conn.RegisterModels(
-		&User{})
+		&User{},
+		&Transcription{},
+	)
 	conn.Migrate()
 }

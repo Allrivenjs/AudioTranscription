@@ -13,6 +13,8 @@ Donde:
 - -out-file representa el archivo donde se escribira los datos. ese se creara automaticamente.
 - `samples\jfk.wav` es la ruta donde se encuentra el audio a decodificar. 
 
+#### Generate documentation
+```bash swag init --parseDependency --parseInternal ```
 
 
 ### links 

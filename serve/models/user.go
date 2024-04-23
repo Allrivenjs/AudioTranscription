@@ -4,6 +4,9 @@ import (
 	"gorm.io/gorm"
 )
 
+// User struct
+// swagger:model
+// @Description User struct register in the application
 type User struct {
 	gorm.Model
 	FirstName string `gorm:"size:100;not null" json:"first_name"`
