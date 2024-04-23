@@ -1,4 +1,4 @@
-package main
+package util
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ func Sh(c string) (string, error) {
 }
 
 // AudioToWav converts audio to wav for transcribe.
-func audioToWav(src, dst string) error {
+func AudioToWav(src, dst string) error {
 	out, err := sh(fmt.Sprintf("ffmpeg -i %s -format s16le -ar 16000 -ac 1 -acodec pcm_s16le %s", src, dst))
 	if err != nil {
 		return fmt.Errorf("error: %w out: %s", err, out)
@@ -29,7 +29,7 @@ func audioToWav(src, dst string) error {
 }
 
 // CutSilences cuts silences from audio.
-func cutSilences(src, dst string) error {
+func CutSilences(src, dst string) error {
 	out, err := sh(fmt.Sprintf("vmh cut-silences %s %s", src, dst))
 	if err != nil {
 		return fmt.Errorf("error: %w out: %s", err, out)

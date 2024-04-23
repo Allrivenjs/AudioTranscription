@@ -3,7 +3,6 @@ package repository
 import (
 	"AudioTranscription/serve/db"
 	"AudioTranscription/serve/models"
-	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -49,7 +48,6 @@ func (r *usersRepository) GetByEmail(email string) (*models.User, error) {
 func (r *usersRepository) GetAll() ([]*models.User, error) {
 	var users []*models.User
 	if err := r.db.Find(&users).Error; err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	return users, nil

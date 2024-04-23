@@ -1,8 +1,13 @@
 package controllers
 
 import (
+	"AudioTranscription/serve/models"
 	"AudioTranscription/serve/repository"
+	"AudioTranscription/serve/storage"
+	"AudioTranscription/serve/util"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"net/http"
 )
 
 type TranscriptionController interface {
@@ -42,13 +47,44 @@ type transcriptionController struct {
 }
 
 func (t transcriptionController) ListTranscription(ctx *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
+	trans, err := t.transcriptionRepo.GetAll()
+	if err != nil {
+		return ctx.Status(500).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return ctx.Status(http.StatusOK).JSON(util.SuccessResponse(&fiber.Map{
+		"transcriptions": trans,
+	}))
+}
+
+type CreateTranscriptionRequest struct {
+	// In: body
+	Audio string `valid:"required" json:"audio"`
+	// In: body
+	Title string `valid:"required" json:"name"`
 }
 
 func (t transcriptionController) CreateTranscription(ctx *fiber.Ctx) error {
-	//TODO implement me
-	panic("implement me")
+	var newTranscription CreateTranscriptionRequest
+	err := ctx.BodyParser(&newTranscription)
+	if err != nil {
+		return ctx.Status(http.StatusUnprocessableEntity).JSON(util.NewJError(err))
+	}
+	validateErrors := util.ValidateInput(ctx, newTranscription)
+	if validateErrors != nil {
+		return ctx.Status(http.StatusBadRequest).JSON(util.ErrorResponse(validateErrors))
+	}
+	var transcriptrion = models.Transcription{
+		Title:             newTranscription.Title,
+		Transcription:     "",
+		SortTranscription: "",
+	}
+	audio := util.AudioToWav()
+	file, err := storage.NewStorage().CreateAudioFile(fmt.Sprintf("%s.%s", newTranscription.Title, "wav"), []byte(newTranscription.Audio))
+	if err != nil {
+		return err
+	}
 }
 
 func (t transcriptionController) GetTranscription(ctx *fiber.Ctx) error {

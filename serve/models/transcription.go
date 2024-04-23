@@ -7,8 +7,9 @@ import "gorm.io/gorm"
 // @Description Transcription struct register in the application
 type Transcription struct {
 	gorm.Model
+	Title             string `gorm:"size:255;not null" json:"title"`
 	UserId            uint   `gorm:"not null" json:"user_id"`
-	AudioUrl          string `gorm:"size:255;not null" json:"audio_url"`
-	Transcription     string `gorm:"type:text;not null" json:"transcription"`
-	SortTranscription string `gorm:"size:255;not null" json:"sort_transcription"`
+	AudioUrl          string `gorm:"size:255" json:"audio_url"`
+	Transcription     string `gorm:"type:text" json:"transcription"`
+	SortTranscription string `gorm:"size:255" json:"sort_transcription"`
 }

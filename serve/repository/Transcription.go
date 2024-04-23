@@ -18,23 +18,33 @@ type transcriptionRepository struct {
 }
 
 func (t transcriptionRepository) SaveOrUpdate(transcription *models.Transcription) error {
-	//TODO implement me
-	panic("implement me")
+	if err := t.db.Save(transcription).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 func (t transcriptionRepository) GetById(id string) (*models.Transcription, error) {
-	//TODO implement me
-	panic("implement me")
+	var transcription models.Transcription
+	if err := t.db.Find(&transcription, id).Error; err != nil {
+		return nil, err
+	}
+	return &transcription, nil
 }
 
 func (t transcriptionRepository) GetAll() ([]*models.Transcription, error) {
-	//TODO implement me
-	panic("implement me")
+	var transcriptions []*models.Transcription
+	if err := t.db.Find(&transcriptions).Error; err != nil {
+		return nil, err
+	}
+	return transcriptions, nil
 }
 
 func (t transcriptionRepository) Delete(id string) error {
-	//TODO implement me
-	panic("implement me")
+	if err := t.db.Delete(&models.Transcription{}, id).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
 func NewTranscriptionRepository(conn db.Connection) TranscriptionRepository {
