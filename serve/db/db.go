@@ -44,8 +44,9 @@ func (c *conn) RegisterModels(models ...interface{}) {
 func (c *conn) Migrate() {
 	log.Println("Migrating models")
 	// reset the database
-	//err := c.db.Migrator().DropTable(modelsRegistered...)
-	err := c.db.AutoMigrate(modelsRegistered...)
+	var err error
+	//err = c.db.Migrator().DropTable(modelsRegistered...)
+	err = c.db.AutoMigrate(modelsRegistered...)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -5,6 +5,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"mime/multipart"
 	"os"
+	"strings"
 )
 
 type Storage interface {
@@ -14,10 +15,7 @@ type Storage interface {
 	GetFile(path string) ([]byte, error)
 }
 
-var baseRoute = fmt.Sprintf("%s/%s", (func() string {
-	dir, _ := os.Getwd()
-	return dir
-})(), "/storage/app/")
+var baseRoute = fmt.Sprintf("%s", "/storage/app/")
 
 type storage struct {
 	baseRoute string
@@ -36,9 +34,9 @@ func (s storage) CreateFolder(path string) error {
 
 func (s storage) CreateFile(path string, file *multipart.FileHeader) (string, error) {
 	fmt.Println("Current working directory")
-	fmt.Println(os.Getwd())
-	newPath := fmt.Sprintf("%s%s", s.baseRoute, path)
-	err := s.ctx.SaveFile(file, newPath)
+	ospath, _ := os.Getwd()
+	newPath := fmt.Sprintf("%s%s", s.baseRoute, strings.Replace(path, " ", "_", -1))
+	err := s.ctx.SaveFile(file, fmt.Sprintf("%s/%s", ospath, newPath))
 	if err != nil {
 		return "", err
 

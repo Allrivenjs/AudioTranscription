@@ -83,7 +83,7 @@ func (t transcriptionController) CreateTranscription(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusBadRequest).JSON(util.ErrorResponse(validateErrors))
 	}
 
-	if strings.Contains(file.Filename, ".mp3") {
+	if !strings.Contains(file.Filename, ".wav") {
 		return ctx.Status(http.StatusBadRequest).JSON(util.NewJError(errors.New("audio file must be in wav format")))
 	}
 	stg := storage.NewStorage(ctx)
@@ -95,7 +95,7 @@ func (t transcriptionController) CreateTranscription(ctx *fiber.Ctx) error {
 	}
 	trans := models.Transcription{
 		Title:             newTranscription.Title,
-		AudioUrl:          path,
+		AudioUrl:          util.NormalizeUrl(path),
 		Transcription:     "",
 		SortTranscription: "",
 	}

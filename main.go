@@ -81,6 +81,10 @@ func main() {
 		BodyLimit:         1024 * 1024 * 1024,
 		StreamRequestBody: true,
 	})
+
+	// public storage
+	app.Static("/storage", "./storage")
+
 	app.Use(cors.New())
 	app.Use(logger.New())
 	app.Get("/", func(ctx *fiber.Ctx) error {
