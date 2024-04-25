@@ -5,8 +5,14 @@ Sistema de Procesamiento y Transcripción de Audio con Spleeter y Whisper
 
 
 ### Use
+##### list
+```{"ggml-tiny.en", "ggml-tiny", "ggml-base.en", "ggml-base", "ggml-small.en", "ggml-small", "ggml-medium.en", "ggml-medium", "ggml-large-v1", "ggml-large-v2", "ggml-large-v3"}```
 ```bash
-./build/go-whisper -model ./models/ggml-small.en.bin -out-file ./samples/text2.txt samples/jfk.wav
+./build/go-model-download -out models ggml-small.en.bin
+```
+
+```bash
+./build/go-whisper -model ./models/ggml-small.en.bin -out-file testdata/text2.txt testdata/jfk.wav
 ```
 Donde:
 - -model representa el modelo a usar, 
@@ -14,7 +20,22 @@ Donde:
 - `samples\jfk.wav` es la ruta donde se encuentra el audio a decodificar. 
 
 #### Generate documentation
-```bash swag init --parseDependency --parseInternal ```
+```bash
+ swag init --parseDependency --parseInternal 
+ ```
+
+
+#### Install air -d
+https://github.com/cosmtrek/air
+
+```bash 
+go install github.com/cosmtrek/air@latest
+```
+
+```bash
+air
+```
+
 
 
 ### links 
