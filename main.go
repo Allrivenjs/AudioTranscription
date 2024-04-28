@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "AudioTranscription/docs"
+	"AudioTranscription/serve/cloudflare"
 	"AudioTranscription/serve/controllers"
 	"AudioTranscription/serve/db"
 	"AudioTranscription/serve/models"
@@ -9,12 +10,9 @@ import (
 	"AudioTranscription/serve/routes"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
 	"github.com/joho/godotenv"
 	"log"
-	"net/http"
 )
 
 func init() {
@@ -77,22 +75,25 @@ func (a *appRepository) registerDocSwagger() {
 }
 
 func main() {
-	app := fiber.New(fiber.Config{
-		BodyLimit:         1024 * 1024 * 1024,
-		StreamRequestBody: true,
-	})
 
-	// public storage
-	app.Static("/storage", "./storage")
+	cloudflare.CloudflareAI()
 
-	app.Use(cors.New())
-	app.Use(logger.New())
-	app.Get("/", func(ctx *fiber.Ctx) error {
-		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Hello World"})
-	})
-	r := &appRepository{app: app}
-	conn := r.async()
-	defer conn.Close()
-	log.Fatal(app.Listen(":8080"))
+	//app := fiber.New(fiber.Config{
+	//	BodyLimit:         1024 * 1024 * 1024,
+	//	StreamRequestBody: true,
+	//})
+	//
+	//// public storage
+	//app.Static("/storage", "./storage")
+	//
+	//app.Use(cors.New())
+	//app.Use(logger.New())
+	//app.Get("/", func(ctx *fiber.Ctx) error {
+	//	return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Hello World"})
+	//})
+	//r := &appRepository{app: app}
+	//conn := r.async()
+	//defer conn.Close()
+	//log.Fatal(app.Listen(":8080"))
 
 }
