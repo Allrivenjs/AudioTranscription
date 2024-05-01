@@ -60,6 +60,6 @@ func CuterAudio(src, dst string) ([]string, error) {
 	for name := range created {
 		list = append(list, name)
 	}
-	
+
 	return list, nil
 }
