@@ -2,17 +2,21 @@ package main
 
 import (
 	_ "AudioTranscription/docs"
-	"AudioTranscription/serve/cloudflare"
 	"AudioTranscription/serve/controllers"
 	"AudioTranscription/serve/db"
 	"AudioTranscription/serve/models"
 	"AudioTranscription/serve/repository"
 	"AudioTranscription/serve/routes"
+	"AudioTranscription/serve/services"
+	"AudioTranscription/serve/storage"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
 	"github.com/joho/godotenv"
 	"log"
+	"net/http"
 )
 
 func init() {
@@ -76,24 +80,39 @@ func (a *appRepository) registerDocSwagger() {
 
 func main() {
 
-	cloudflare.CloudflareAI()
+	//cloudflare.CloudflareAI()
 
-	//app := fiber.New(fiber.Config{
-	//	BodyLimit:         1024 * 1024 * 1024,
-	//	StreamRequestBody: true,
-	//})
-	//
-	//// public storage
-	//app.Static("/storage", "./storage")
-	//
-	//app.Use(cors.New())
-	//app.Use(logger.New())
-	//app.Get("/", func(ctx *fiber.Ctx) error {
-	//	return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Hello World"})
-	//})
-	//r := &appRepository{app: app}
-	//conn := r.async()
-	//defer conn.Close()
-	//log.Fatal(app.Listen(":8080"))
+	app := fiber.New(fiber.Config{
+		BodyLimit:         1024 * 1024 * 1024,
+		StreamRequestBody: true,
+	})
+
+	// public storage
+	app.Static("/storage", "./storage")
+
+	app.Use(cors.New())
+	app.Use(logger.New())
+	app.Get("/", func(ctx *fiber.Ctx) error {
+		//get param file
+		fileP := ctx.Query("file")
+		// verify if existed the folder
+		err := storage.CreateFolderTemp()
+		if err != nil {
+			fmt.Printf("Error creating folder: %s", err.Error())
+		}
+		path := fmt.Sprintf("%s%s%s", storage.GetPathCurrent(), storage.GetBaseRoute(), storage.GetBaseTemp())
+		fmt.Println(path)
+		_, err = services.CuterAudio(fileP, path)
+		if err != nil {
+			return err
+		}
+
+		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Hello World", "file": fileP})
+	})
+
+	r := &appRepository{app: app}
+	conn := r.async()
+	defer conn.Close()
+	log.Fatal(app.Listen(":8080"))
 
 }

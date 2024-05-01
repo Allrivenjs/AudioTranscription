@@ -29,8 +29,8 @@ func AudioToWav(src, dst string) error {
 }
 
 // CutSilences cuts silences from audio.
-func CutSilences(src, dst string, startTime, endTime int16) error {
-	err := ffmpeg_go.Input(src, ffmpeg_go.KwArgs{"ss": startTime}).Output(dst, ffmpeg_go.KwArgs{"t": startTime}).OverWriteOutput().ErrorToStdOut().Run()
+func CutSilences(src, dst string, startTime, endTime int) error {
+	err := ffmpeg_go.Input(src, ffmpeg_go.KwArgs{"ss": startTime}).Output(dst, ffmpeg_go.KwArgs{"t": endTime}).OverWriteOutput().ErrorToStdOut().Run()
 	if err != nil {
 		return fmt.Errorf("error: %w out: %s", err, dst)
 	}
