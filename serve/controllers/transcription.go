@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"AudioTranscription/serve/jobs"
 	"AudioTranscription/serve/models"
 	"AudioTranscription/serve/repository"
 	"AudioTranscription/serve/storage"
@@ -8,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/u2takey/go-utils/json"
 	"net/http"
 	"strings"
 	"time"
@@ -96,10 +98,13 @@ func (t transcriptionController) CreateTranscription(ctx *fiber.Ctx) error {
 	trans := models.Transcription{
 		Title:             newTranscription.Title,
 		AudioUrl:          util.NormalizeUrl(path),
+		LocateFile:        path,
 		Transcription:     "",
 		SortTranscription: "",
 	}
 	err = t.transcriptionRepo.SaveOrUpdate(&trans)
+	payload, _ := json.Marshal(trans)
+	err = jobs.GetInstance().Register("transcription", string(payload))
 	if err != nil {
 		return ctx.Status(http.StatusBadRequest).JSON(util.NewJError(err))
 	}

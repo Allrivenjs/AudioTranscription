@@ -6,6 +6,7 @@ func AutoMigrate(conn db.Connection) {
 	conn.RegisterModels(
 		&User{},
 		&Transcription{},
+		&JobModel{},
 	)
 	conn.Migrate()
 }

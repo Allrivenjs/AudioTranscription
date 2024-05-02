@@ -4,12 +4,10 @@ import (
 	_ "AudioTranscription/docs"
 	"AudioTranscription/serve/controllers"
 	"AudioTranscription/serve/db"
+	"AudioTranscription/serve/jobs"
 	"AudioTranscription/serve/models"
 	"AudioTranscription/serve/repository"
 	"AudioTranscription/serve/routes"
-	"AudioTranscription/serve/services"
-	"AudioTranscription/serve/storage"
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -39,6 +37,7 @@ func (a *appRepository) async() db.Connection {
 	app := a.app
 	conn := db.NewConnection()
 	models.AutoMigrate(conn)
+
 	usersRepo := repository.NewUsersRepository(conn)
 	authController := controllers.NewAuthController(usersRepo)
 	authRoutes := routes.NewAuthRoutes(authController)
@@ -52,13 +51,13 @@ func (a *appRepository) async() db.Connection {
 	a.registerDocSwagger()
 
 	// Obtener todas las rutas
-	getRoutes := app.GetRoutes()
+	//getRoutes := app.GetRoutes()
 
 	//Imprimir todas las rutas
-	fmt.Println("Rutas registradas:")
-	for _, route := range getRoutes {
-		fmt.Printf("-> %s %s\n", route.Method, route.Path)
-	}
+	//fmt.Println("Rutas registradas:")
+	//for _, route := range getRoutes {
+	//	fmt.Printf("-> %s %s\n", route.Method, route.Path)
+	//}
 	return conn
 }
 
@@ -95,17 +94,6 @@ func main() {
 	app.Get("/", func(ctx *fiber.Ctx) error {
 		//get param file
 		fileP := ctx.Query("file")
-		// verify if existed the folder
-		err := storage.CreateFolderTemp()
-		if err != nil {
-			fmt.Printf("Error creating folder: %s", err.Error())
-		}
-		path := fmt.Sprintf("%s%s%s", storage.GetPathCurrent(), storage.GetBaseRoute(), storage.GetBaseTemp())
-		fmt.Println(path)
-		_, err = services.CuterAudio(fileP, path)
-		if err != nil {
-			return err
-		}
 
 		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Hello World", "file": fileP})
 	})
@@ -113,6 +101,7 @@ func main() {
 	r := &appRepository{app: app}
 	conn := r.async()
 	defer conn.Close()
+	go jobs.Init(conn).Listen()
 	log.Fatal(app.Listen(":8080"))
 
 }

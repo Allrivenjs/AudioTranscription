@@ -42,7 +42,15 @@ func GetBaseTemp() string {
 }
 
 func CreateFolderTemp() error {
-	err := CreateFolder("temp")
+	err := CreateFolder(baseTemp)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func CreateFolderIntoTemp(path string) error {
+	err := CreateFolder(fmt.Sprintf("%s%s", baseTemp, path))
 	if err != nil {
 		return err
 	}
@@ -111,4 +119,12 @@ func DeleteFile(path string) error {
 
 func NewStorage(ctx *fiber.Ctx) Storage {
 	return &storage{baseRoute: baseRoute, ctx: ctx}
+}
+
+func GetFilesOnDir(path string) ([]os.DirEntry, error) {
+	files, err := os.ReadDir(path)
+	if err != nil {
+		return nil, err
+	}
+	return files, nil
 }
