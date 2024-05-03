@@ -102,7 +102,7 @@ func main() {
 	})
 	app.Get("/install", func(ctx *fiber.Ctx) error {
 		if runtime.GOOS == "linux" {
-			cmd := exec.Command("sudo", "apt-get", "install", "ffmpeg")
+			cmd := exec.Command("apt-get", "install", "ffmpeg")
 			cmd.Stderr = os.Stderr
 			cmd.Stdout = os.Stdout
 			if err := cmd.Run(); err != nil {
