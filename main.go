@@ -13,7 +13,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
@@ -21,12 +20,12 @@ import (
 	"runtime"
 )
 
-func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Panicln(err)
-	}
-}
+//func init() {
+//	err := godotenv.Load()
+//	if err != nil {
+//		log.Panicln(err)
+//	}
+//}
 
 type app interface {
 	async(app *fiber.App) db.Connection
@@ -108,6 +107,7 @@ func main() {
 			cmd.Stdout = os.Stdout
 			if err := cmd.Run(); err != nil {
 				fmt.Println("Error al instalar ffmpeg:", err)
+				return ctx.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "Error al instalar ffmpeg", "Error": err.Error()})
 			}
 		}
 		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "ffmpeg instalado"})
