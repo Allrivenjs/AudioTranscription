@@ -107,6 +107,10 @@ func main() {
 	app.Get("/", func(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Hello World", "os": runtime.GOOS})
 	})
+	app.Get("/healthz", func(ctx *fiber.Ctx) error {
+		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "pong"})
+
+	})
 
 	r := &appRepository{app: app}
 	conn := r.async()
