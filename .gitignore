@@ -7,7 +7,8 @@
 *.dll
 *.so
 *.dylib
-
+.env
+/storage/app
 # Test binary, built with `go test -c`
 *.test
 
@@ -22,7 +23,5 @@ go.work
 
 .idea
 temp
-files/*
-on_process_files/*
-pretrained_models
-Transform/pretrained_models
+models/*
+samples/*.txt

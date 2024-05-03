@@ -1,37 +1,107 @@
 package main
 
 import (
-	"AudioTranscription/Transform"
-	"fmt"
+	_ "AudioTranscription/docs"
+	"AudioTranscription/serve/controllers"
+	"AudioTranscription/serve/db"
+	"AudioTranscription/serve/jobs"
+	"AudioTranscription/serve/models"
+	"AudioTranscription/serve/repository"
+	"AudioTranscription/serve/routes"
 	"github.com/gofiber/fiber/v2"
-	"os/exec"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/swagger"
+	"github.com/joho/godotenv"
+	"log"
+	"net/http"
 )
 
-func main() {
-	app := fiber.New()
-	// Verificar si FFmpeg está instalado en el sistema
-	_, err := exec.LookPath("ffmpeg")
+func init() {
+	err := godotenv.Load()
 	if err != nil {
-		panic(fmt.Errorf("FFmpeg no está instalado en tu sistema"))
+		log.Panicln(err)
 	}
+}
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World 👋!")
+type app interface {
+	async(app *fiber.App) db.Connection
+	registerDocSwagger(app *fiber.App)
+}
+
+type appRepository struct {
+	app *fiber.App
+}
+
+func (a *appRepository) async() db.Connection {
+	app := a.app
+	conn := db.NewConnection()
+	models.AutoMigrate(conn)
+
+	usersRepo := repository.NewUsersRepository(conn)
+	authController := controllers.NewAuthController(usersRepo)
+	authRoutes := routes.NewAuthRoutes(authController)
+
+	transRepo := repository.NewTranscriptionRepository(conn)
+	transController := controllers.NewTranscriptionController(transRepo)
+	transRoutes := routes.NewTransRoutes(transController)
+
+	authRoutes.Install(app)
+	transRoutes.Install(app)
+	a.registerDocSwagger()
+
+	// Obtener todas las rutas
+	//getRoutes := app.GetRoutes()
+
+	//Imprimir todas las rutas
+	//fmt.Println("Rutas registradas:")
+	//for _, route := range getRoutes {
+	//	fmt.Printf("-> %s %s\n", route.Method, route.Path)
+	//}
+	return conn
+}
+
+func (a *appRepository) registerDocSwagger() {
+	app := a.app
+	app.Get("/docs/*", swagger.HandlerDefault)
+
+	app.Get("/docs/*", swagger.New(swagger.Config{
+		URL:          "http://example.com/swagger.json",
+		DeepLinking:  false,
+		DocExpansion: "none",
+		OAuth: &swagger.OAuthConfig{
+			AppName:  "OAuth Provider",
+			ClientId: "21bb4edc-05a7-4afc-86f1-2e151e4ba6e2",
+		},
+		OAuth2RedirectUrl: "http://localhost:3001/swagger/oauth2-redirect.html",
+	}))
+}
+
+func main() {
+
+	//cloudflare.CloudflareAI()
+
+	app := fiber.New(fiber.Config{
+		BodyLimit:         1024 * 1024 * 1024,
+		StreamRequestBody: true,
 	})
 
-	app.Get("/create-temp-folder", func(c *fiber.Ctx) error {
-		//filepath := "on_process_files/audioTest1.mp3"
-		filepath := "on_process_files/"
+	// public storage
+	app.Static("/storage", "./storage")
 
-		//err := Transform.CutAudio(filepath, "parts", 15)
-		//err := Transform.Spleeter(filepath)
-		path, err := Transform.GetAllFilesPath(filepath)
-		if err != nil {
-			fmt.Println("Error al obtener la duración del archivo:", err)
-		}
-		fmt.Println(path)
-		return c.SendString("Hello, World 👋! ")
+	app.Use(cors.New())
+	app.Use(logger.New())
+	app.Get("/", func(ctx *fiber.Ctx) error {
+		//get param file
+		fileP := ctx.Query("file")
+
+		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Hello World", "file": fileP})
 	})
 
-	panic(app.Listen(":3000"))
+	r := &appRepository{app: app}
+	conn := r.async()
+	defer conn.Close()
+	go jobs.Init(conn).Listen()
+	log.Fatal(app.Listen(":8080"))
+
 }
