@@ -8,6 +8,7 @@ import (
 	"AudioTranscription/serve/models"
 	"AudioTranscription/serve/repository"
 	"AudioTranscription/serve/routes"
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -15,6 +16,9 @@ import (
 	"github.com/joho/godotenv"
 	"log"
 	"net/http"
+	"os"
+	"os/exec"
+	"runtime"
 )
 
 func init() {
@@ -79,6 +83,15 @@ func (a *appRepository) registerDocSwagger() {
 
 func main() {
 
+	if runtime.GOOS == "linux" {
+		cmd := exec.Command("sudo", "apt-get", "install", "ffmpeg")
+		cmd.Stderr = os.Stderr
+		cmd.Stdout = os.Stdout
+		if err := cmd.Run(); err != nil {
+			fmt.Println("Error al instalar ffmpeg:", err)
+		}
+	}
+
 	//cloudflare.CloudflareAI()
 
 	app := fiber.New(fiber.Config{
@@ -92,10 +105,7 @@ func main() {
 	app.Use(cors.New())
 	app.Use(logger.New())
 	app.Get("/", func(ctx *fiber.Ctx) error {
-		//get param file
-		fileP := ctx.Query("file")
-
-		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Hello World", "file": fileP})
+		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Hello World", "os": runtime.GOOS})
 	})
 
 	r := &appRepository{app: app}

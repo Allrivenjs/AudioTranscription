@@ -137,11 +137,16 @@ func (j *jobManager) ExecTranscription(job *models.JobModel) {
 	transcriptionText := ""
 	for _, key := range keys {
 		response := <-transcriptions[key]
+		if response.Errors[0] != nil {
+			fmt.Println("Error processing file: ", files[key])
+			fmt.Println(response.Errors[0])
+			j.failed(job)
+			return
+		}
 		transcriptionText = fmt.Sprintf("%s %s", transcriptionText, response.Result.Text)
 	}
 
 	fmt.Println("Transcription: ", transcriptionText)
-
 	// save transcription
 	transcription.Transcription = transcriptionText
 	if len(transcriptionText) > 250 {
