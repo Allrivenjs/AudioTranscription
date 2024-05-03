@@ -83,15 +83,6 @@ func (a *appRepository) registerDocSwagger() {
 
 func main() {
 
-	if runtime.GOOS == "linux" {
-		cmd := exec.Command("sudo", "apt-get", "install", "ffmpeg")
-		cmd.Stderr = os.Stderr
-		cmd.Stdout = os.Stdout
-		if err := cmd.Run(); err != nil {
-			fmt.Println("Error al instalar ffmpeg:", err)
-		}
-	}
-
 	//cloudflare.CloudflareAI()
 
 	app := fiber.New(fiber.Config{
@@ -109,7 +100,17 @@ func main() {
 	})
 	app.Get("/healthz", func(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "pong"})
-
+	})
+	app.Get("/install", func(ctx *fiber.Ctx) error {
+		if runtime.GOOS == "linux" {
+			cmd := exec.Command("sudo", "apt-get", "install", "ffmpeg")
+			cmd.Stderr = os.Stderr
+			cmd.Stdout = os.Stdout
+			if err := cmd.Run(); err != nil {
+				fmt.Println("Error al instalar ffmpeg:", err)
+			}
+		}
+		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "ffmpeg instalado"})
 	})
 
 	r := &appRepository{app: app}
