@@ -95,7 +95,7 @@ func main() {
 	app.Use(cors.New())
 	app.Use(logger.New())
 	app.Get("/", func(ctx *fiber.Ctx) error {
-		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Hello World", "os": runtime.GOOS})
+		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Hello World", "os": runtime.GOOS, "distro": runtime.GOARCH})
 	})
 	app.Get("/healthz", func(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "pong"})
