@@ -11,7 +11,7 @@ import (
 
 const (
 	// CuterAudioDuration is the duration of the audio to cut.
-	CuterAudioDuration = 15
+	CuterAudioDuration = 60
 )
 
 // CuterAudio cuts audio every 15 seconds.

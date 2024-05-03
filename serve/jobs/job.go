@@ -144,7 +144,11 @@ func (j *jobManager) ExecTranscription(job *models.JobModel) {
 
 	// save transcription
 	transcription.Transcription = transcriptionText
-	transcription.SortTranscription = transcriptionText[:250]
+	if len(transcriptionText) > 250 {
+		transcription.SortTranscription = transcriptionText[:250]
+	} else {
+		transcription.SortTranscription = transcriptionText
+	}
 	err = j.db.Save(&transcription).Error
 	if err != nil {
 		fmt.Printf("Error saving transcription: %s", err.Error())
@@ -152,7 +156,7 @@ func (j *jobManager) ExecTranscription(job *models.JobModel) {
 		return
 	}
 
-	// mark job as completed
+	//mark job as completed
 	err = j.Completed(job)
 	if err != nil {
 		fmt.Printf("Error marking job as completed: %s", err.Error())
