@@ -115,6 +115,12 @@ func main() {
 
 	r := &appRepository{app: app}
 	conn := r.async()
+
+	app.Get("/reset", func(ctx *fiber.Ctx) error {
+		conn.RefreshMigration()
+		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Base de datos reiniciada"})
+	})
+
 	defer conn.Close()
 	go jobs.Init(conn).Listen()
 	log.Fatal(app.Listen(":8080"))

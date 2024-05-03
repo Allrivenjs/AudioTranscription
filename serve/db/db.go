@@ -13,13 +13,14 @@ type Connection interface {
 	DB() *gorm.DB
 	RegisterModels(...interface{})
 	Migrate()
+	RefreshMigration()
 }
 
 type conn struct {
 	db *gorm.DB
 }
 
-var modelsRegistered []interface{}
+var ModelsRegistered []interface{}
 
 func NewConnection() Connection {
 	log.Println("creating connection")
@@ -38,18 +39,25 @@ func (c *conn) RegisterModels(models ...interface{}) {
 	for _, model := range models {
 		log.Printf("Registering model %T", model)
 	}
-	modelsRegistered = append(modelsRegistered, models...)
+	ModelsRegistered = append(ModelsRegistered, models...)
 }
 
 func (c *conn) Migrate() {
 	log.Println("Migrating models")
 	// reset the database
 	var err error
-	//err = c.db.Migrator().DropTable(modelsRegistered...)
-	err = c.db.AutoMigrate(modelsRegistered...)
+	err = c.db.AutoMigrate(ModelsRegistered...)
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (c *conn) RefreshMigration() {
+	err := c.db.Migrator().DropTable(ModelsRegistered...)
+	if err != nil {
+		log.Fatal(err)
+	}
+	c.Migrate()
 }
 
 func (c *conn) Close() {
