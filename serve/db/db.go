@@ -25,6 +25,7 @@ var ModelsRegistered []interface{}
 func NewConnection() Connection {
 	log.Println("creating connection")
 	var c conn
+	fmt.Println(getDNS())
 	db, err := gorm.Open(mysql.Open(getDNS()), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)

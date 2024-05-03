@@ -5,7 +5,7 @@ FROM golang:latest
 RUN apt-get update && apt-get install -y ffmpeg
 
 # Establece el directorio de trabajo dentro del contenedor
-WORKDIR /go/src/app
+WORKDIR /app
 
 # Copia los archivos de la aplicación al contenedor
 COPY . .

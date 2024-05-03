@@ -21,5 +21,8 @@ services:
       - mysql
     env_file:
       - .env
+    volumes:
+      - .:/app
+
 volumes:
   mysql_data:

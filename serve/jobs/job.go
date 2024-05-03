@@ -137,9 +137,10 @@ func (j *jobManager) ExecTranscription(job *models.JobModel) {
 	transcriptionText := ""
 	for _, key := range keys {
 		response := <-transcriptions[key]
-		if response.Errors[0] != nil {
+		fmt.Println("Response: ", response)
+		if len(response.Errors) > 0 {
 			fmt.Println("Error processing file: ", files[key])
-			fmt.Println(response.Errors[0])
+			fmt.Println(response.Errors)
 			j.failed(job)
 			return
 		}
