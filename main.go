@@ -13,7 +13,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
@@ -21,12 +20,12 @@ import (
 	"runtime"
 )
 
-func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Panicln(err)
-	}
-}
+//func init() {
+//	err := godotenv.Load()
+//	if err != nil {
+//		log.Panicln(err)
+//	}
+//}
 
 type app interface {
 	async(app *fiber.App) db.Connection
@@ -124,6 +123,7 @@ func main() {
 
 	defer conn.Close()
 	go jobs.Init(conn).Listen()
+	fmt.Println(os.Getenv("APP_PORT"))
 	log.Fatal(app.Listen(os.Getenv("APP_PORT")))
 
 }
