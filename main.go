@@ -124,6 +124,6 @@ func main() {
 
 	defer conn.Close()
 	go jobs.Init(conn).Listen()
-	log.Fatal(app.Listen(":8080"))
+	log.Fatal(app.Listen(os.Getenv("APP_PORT")))
 
 }
