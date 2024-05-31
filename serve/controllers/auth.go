@@ -68,15 +68,22 @@ func NewAuthController(usersRepo repository.UsersRepository) AuthController {
 	return &authController{usersRepo}
 }
 
+type SignUp struct {
+	Email    string `valid:"required,stringlength(3|100)" json:"email"`
+	Password string `valid:"required,stringlength(3|100)" json:"password"`
+}
+
 func (c *authController) SignUp(ctx *fiber.Ctx) error {
-	var newUser models.User
-	err := ctx.BodyParser(&newUser)
+	var data SignUp
+	err := ctx.BodyParser(&data)
 	if err != nil {
+		fmt.Println("Error parsing body")
 		return ctx.
 			Status(http.StatusUnprocessableEntity).
 			JSON(util.NewJError(err))
 	}
-	newUser.Email = util.NormalizeEmail(newUser.Email)
+	var newUser models.User
+	newUser.Email = util.NormalizeEmail(data.Email)
 
 	if !govalidator.IsEmail(newUser.Email) {
 		return ctx.
@@ -86,13 +93,14 @@ func (c *authController) SignUp(ctx *fiber.Ctx) error {
 
 	exists, err := c.usersRepo.GetByEmail(newUser.Email)
 	fmt.Println(fmt.Sprintf("exists: %v and error is %v", exists, err))
-	if errors.Is(err, mgo.ErrNotFound) {
-		if strings.TrimSpace(newUser.Password) == "" {
+	if err.Error() == "record not found" {
+		fmt.Println("password: ", data.Password)
+		if strings.TrimSpace(data.Password) == "" {
 			return ctx.
 				Status(http.StatusBadRequest).
 				JSON(util.NewJError(util.ErrEmptyPassword))
 		}
-		newUser.Password, err = security.EncryptPassword(newUser.Password)
+		newUser.Password, err = security.EncryptPassword(data.Password)
 
 		if err != nil {
 			return ctx.
@@ -111,6 +119,7 @@ func (c *authController) SignUp(ctx *fiber.Ctx) error {
 			Status(http.StatusCreated).
 			JSON(newUser)
 	}
+
 	fmt.Println("user")
 	if exists != nil {
 		err = util.ErrEmailAlreadyExists

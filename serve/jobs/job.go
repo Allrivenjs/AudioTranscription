@@ -6,9 +6,12 @@ import (
 	"AudioTranscription/serve/models"
 	"AudioTranscription/serve/services"
 	"AudioTranscription/serve/storage"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
+	"net/http"
+	"os"
 	"sort"
 	"sync"
 	"time"
@@ -164,6 +167,16 @@ func (j *jobManager) ExecTranscription(job *models.JobModel) {
 
 	//mark job as completed
 	err = j.Completed(job)
+
+	// send fetch to socket app
+	fmt.Println("Send post to: ", os.Getenv("APP_SOCKET_URL")+"/transcription")
+	get, err := http.Post(os.Getenv("APP_SOCKET_URL")+"/transcription", "application/json", bytes.NewBuffer([]byte(`{"refresh": true}`)))
+	if err != nil {
+		fmt.Printf("Error realizando la solicitud: %v", err)
+	}
+	// Asegurarse de cerrar el cuerpo de la respuesta
+	defer get.Body.Close()
+
 	if err != nil {
 		fmt.Printf("Error marking job as completed: %s", err.Error())
 		j.failed(job)

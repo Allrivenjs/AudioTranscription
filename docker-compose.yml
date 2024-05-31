@@ -11,6 +11,16 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
+  my-project-with-air:
+    image: cosmtrek/air
+    # working_dir value has to be the same of mapped volume
+    working_dir: /../AudioTranscription
+    ports:
+      - 8080:8080
+    env_file:
+      - .env
+    volumes:
+      - /:/project-package/
 #  server:
 #    image: golang:latest
 #    ports:

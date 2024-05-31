@@ -88,6 +88,8 @@ func (a *appRepository) registerDocSwagger() {
 func main() {
 
 	//cloudflare.CloudflareAI()
+	// The key for the map is message.to
+	//clients := make(map[string]string)
 
 	app := fiber.New(fiber.Config{
 		BodyLimit:         1024 * 1024 * 1024,
@@ -99,6 +101,7 @@ func main() {
 
 	app.Use(cors.New())
 	app.Use(logger.New())
+
 	app.Get("/", func(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusOK).JSON(fiber.Map{"message": "Hello World", "os": runtime.GOOS, "distro": runtime.GOARCH})
 	})
